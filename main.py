@@ -13,7 +13,6 @@ from dotenv import load_dotenv
 load_dotenv()
 orcfilepath  = os.getenv("FILE_PATH")
 tzdir_path = os.getenv("TZDIR")
-print(orcfilepath)
  
 os.environ["TZDIR"] = tzdir_path
 
@@ -35,7 +34,6 @@ async def root():
 
 @app.get("/getrules")
 async def rules():
-    print("ll")
     docs  = await database.get_db_rules()
     df = pd.DataFrame()
     df["whenvalue"] = "default_value"
@@ -45,9 +43,7 @@ async def rules():
     except:
         print("issue")
     for doc in docs:
-        print(doc)
         customername = doc['customerName']
-        print(customername)
         key, value = next(iter(doc['then'][0].items()))
         df = pd.concat([df, pd.DataFrame({"whenvalue": [doc["when"][0]["ISOWhenValue"]],"whenpath":[doc["when"][0]["ISOWhenField"]],"customerName":[customername], "thenpath":key,"thenvalue":[value]})], ignore_index=True)
     table = pa.Table.from_pandas(df, preserve_index=False)
@@ -55,7 +51,6 @@ async def rules():
     orc.write_table(table, file_path) 
     read_table = orc.read_table(file_path)
     read_df = read_table.to_pandas()
-    print(read_df['customerName'])
 
     return {"hello":"something"}
 
@@ -79,13 +74,11 @@ async def fetch_matching(request: Request):
 )
     matches_df = pd.DataFrame(matches, columns=['companyname', 'score', 'index'])
     matches_df = matches_df.sort_values('score', ascending=False)
-    print(matches_df)
     return matches_df
 
 @app.post("/findrules")
 async def findrules(request: Request):
     doc = await request.json()
-    print(doc)
     orc_file_path = orcfilepath
     df_orc = pd.read_orc(orc_file_path)
     key, value = next(iter(doc['then'][0].items()))
@@ -114,8 +107,6 @@ async def findrules(request: Request):
     # Get top matches
     top_matches = filtered_matches.sort_values(by='similarity_score', ascending=False)
 
-    print("Top Matches:")
-    print(top_matches[['whenvalue', 'thenvalue', 'similarity_score', 'customerName']])
     ruleslist = []
     for index, row in top_matches.iterrows():
         doc_copy = doc
