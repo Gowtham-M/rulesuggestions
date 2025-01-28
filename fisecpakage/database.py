@@ -18,9 +18,8 @@ async def get_db_docs():
 async def get_db_rules():
     client = pymongo.MongoClient(dbpath)
     db = client["dataknol-fisec"]
-    collection = db["stpconfigurations"]
-    customer = "NextGen Biotech"
-    documents = collection.find()
+    collection = db["stage"]
+    documents = collection.find({"rulesStatus":"Rule Received"})
     return documents
 
 async def get_db_bank_rules():
@@ -31,3 +30,4 @@ async def get_db_bank_rules():
     documents = collection.find()
     print(documents)
     return documents
+
